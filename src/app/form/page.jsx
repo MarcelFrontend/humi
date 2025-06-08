@@ -33,11 +33,11 @@ const AddMealForm = () => {
         };
 
         emailjs.send('service_tznc19z', 'template_f2nsfai', mealData, "HzGe_rjFUfcpNaEZK")
-            .then((response) => {
-                console.log('Email sent successfully!', response.status, response.text);
+            .then((res) => {
+                console.log("Pomyślnie dodano nowy przepis:", res);
             })
             .catch((err) => {
-                console.error('Failed to send email. Error:', err);
+                console.error('Nie udało się przesłać przepisu:', err);
             });
     };
 
