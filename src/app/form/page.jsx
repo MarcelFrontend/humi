@@ -17,19 +17,93 @@ const AddMealForm = () => {
 
     const interStyles = "hover:scale-105 active:scale-95 duration-300"
 
+    const validateForm = () => {
+        if (!mealName.trim()) {
+            alert('Nazwa przepisu jest wymagana');
+            return false;
+        }
+        if (!krotkiOpis.trim()) {
+            alert('Krótki opis jest wymagany');
+            return false;
+        }
+        if (mealMakingSteps.some(step => !step.trim())) {
+            alert('Wszystkie kroki muszą być uzupełnione');
+            return false;
+        }
+        const cal = Number(calories);
+        if (isNaN(cal) || cal < 0) {
+            alert('Kalorie muszą być liczbą większą lub równą 0');
+            return false;
+        }
+        const zloz = Number(zlozonosc);
+        if (isNaN(zloz) || zloz < 0 || zloz > 100) {
+            alert('Złożoność musi być liczbą z zakresu 0-100');
+            return false;
+        }
+        if (!mealMakingTime.trim()) {
+            alert('Czas przygotowania jest wymagany');
+            return false;
+        }
+        const timeLower = mealMakingTime.toLowerCase();
+        if (
+            !(
+                timeLower.includes('hour') ||
+                timeLower.includes('hr') ||
+                timeLower.includes('godz') ||
+                timeLower.includes('min') ||
+                timeLower.includes('minute')
+            )
+        ) {
+            alert('Czas przygotowania powinien zawierać jednostkę czasu (np. godziny, minuty)');
+            return false;
+        }
+        if (!mealFromCountry.trim()) {
+            alert('Pochodzenie jest wymagane');
+            return false;
+        }
+        if (mealIngredients.length === 0) {
+            alert('Przepis musi zawierać co najmniej jeden składnik');
+            return false;
+        }
+        if (mealIngredients.some(s => !s.ingredient.trim())) {
+            alert('Wszystkie składniki muszą mieć nazwę');
+            return false;
+        }
+        if (mealIngredients.some(s => {
+            const kcal = Number(s.calories);
+            return isNaN(kcal) || s.calories === '';
+        })) {
+            alert('Kalorie składników muszą być liczbą');
+            return false;
+        }
+        if (mealImage.trim()) {
+            try {
+                new URL(mealImage);
+            } catch {
+                alert('Podany link do zdjęcia jest nieprawidłowy');
+                return false;
+            }
+        }
+        return true;
+    }
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!validateForm()) return;
+
         const mealData = {
             mealName,
             krotkiOpis,
             mealMakingSteps,
-            calories,
-            zlozonosc,
+            calories: Number(calories),
+            zlozonosc: Number(zlozonosc),
             mealType,
             mealMakingTime,
             mealFromCountry,
             mealImage,
-            mealIngredients,
+            mealIngredients: mealIngredients.map(i => ({
+                ingredient: i.ingredient,
+                calories: Number(i.calories)
+            })),
         };
 
         emailjs.send('service_tznc19z', 'template_f2nsfai', mealData, "HzGe_rjFUfcpNaEZK")
@@ -172,6 +246,7 @@ const AddMealForm = () => {
                                     <input
                                         type="number"
                                         min="0"
+                                        placeholder="Cal"
                                         value={skladnik.calories}
                                         onChange={(e) => {
                                             const newSkladniki = [...mealIngredients];
@@ -199,7 +274,6 @@ const AddMealForm = () => {
                 </button>
             </form>
         </div>
-
     );
 };
 
