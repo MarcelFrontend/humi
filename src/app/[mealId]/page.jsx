@@ -1,22 +1,25 @@
 "use client"
 import { useParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react';
-import { getMealWithIngredients } from '../backend';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const page = () => {
-  const params = useParams()
-  const [mealData, setMealData] = useState({})
+async function getMeal(id) {
+  const res = await fetch(`/api/meals/${id}`, { cache: 'no-store' });
+  return res.json();
+}
+
+const Page = () => {
+  const params = useParams();
+  const [mealData, setMealData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchMealData = async (mealId) => {
     setLoading(true);
     try {
-      const data = await getMealWithIngredients(mealId);
-      setMealData(JSON.parse(data));
-
+      const data = await getMeal(mealId);
+      setMealData(data);
     } catch (error) {
       setError(error);
     } finally {
@@ -25,22 +28,14 @@ const page = () => {
   };
 
   useEffect(() => {
-    if (params) {
-      fetchMealData(params.mealId)
+    if (params?.mealId) {
+      fetchMealData(params.mealId);
     }
-  }, [params])
+  }, [params]);
 
-  if (loading) {
-    return <div className="text-center text-lg">Ładowanie...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">Błąd: {error.message}</div>
-  }
-
-  if (!mealData || mealData.length === 0) {
-    return <div className="text-center">Nie pobrano żadnych danych.</div>;
-  }
+  if (loading) return <div className="text-center text-lg">Ładowanie...</div>;
+  if (error) return <div className="text-red-500">Błąd: {error.message}</div>;
+  if (!mealData || !mealData.meal) return <div className="text-center">Nie pobrano danych przepisu.</div>;
 
   return (
     <div className="h-dvh flex items-start flex-col p-1">
@@ -70,4 +65,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page;
